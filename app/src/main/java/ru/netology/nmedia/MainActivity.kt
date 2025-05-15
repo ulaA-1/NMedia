@@ -1,6 +1,7 @@
 package ru.netology.nmedia
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.dto.Post
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
             published = getString(R.string.Data),
             content = getString(R.string.NetologyText),
             likedByMe = false,
-            likes = 999,
+            likes = 1999,
             shares = 5,
             views = 12500
         )
@@ -63,9 +64,21 @@ class MainActivity : AppCompatActivity() {
     private fun formatCount(count: Int): String {
         return when {
             count < 1_000 -> count.toString()
-            count in 1_000..9_999 -> String.format(Locale.US, "%.1fK", count / 1_000.0)
-            count in 10_000..999_999 -> "${count / 1_000}K"
-            else -> String.format(Locale.US, "%.1fM", count / 1_000_000.0)
+            count in 1_000..9_999 -> {
+                val whole = count / 1_000
+                val decimal = (count % 1_000) / 100
+                "$whole.$decimal" + "K"
+            }
+            count in 10_000..999_999 -> {
+                val thousands = count / 1_000
+                "$thousands" + "K"
+            }
+            else -> {
+                val millions = count / 1_000_000
+                val decimal = (count % 1_000_000) / 100_000
+                "$millions.$decimal" + "M"
+            }
         }
     }
+
 }
