@@ -1,9 +1,24 @@
 reserve.md
 HELP.md
+desktop.ini
+
 .gradle
 build/
 
-### STS ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+local.properties
+captures/
+.externalNativeBuild
+.cxx
+.kotlinc
+.kotlin
+*.log
+
 .apt_generated
 .classpath
 .factorypath
@@ -12,30 +27,14 @@ build/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-
-### Android Studio ###
-local.properties
-captures/
-.externalNativeBuild
-.cxx
-
-### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
 .vscode/
 
-### Package Files ###
 *.jar
 *.war
 *.nar
@@ -44,5 +43,4 @@ captures/
 *.tar.gz
 *.rar
 
-### Gradle ###
 !gradle/wrapper/gradle-wrapper.jar
