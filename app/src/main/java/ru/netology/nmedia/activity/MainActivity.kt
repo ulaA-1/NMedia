@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.ActivityMainBinding
 import ru.netology.nmedia.viewmodel.PostViewModel
-import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
