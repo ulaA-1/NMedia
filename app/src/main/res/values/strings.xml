@@ -12,4 +12,10 @@
     <string name="FiveHundred">500</string>
     <string name="ten">10</string>
     <string name="menuButton">Menu button</string>
+    <string name="menu_remove">Remove</string>
+    <string name="menu_edit">Edit</string>
+    <string name="description_post_save">Save</string>
+    <string name="post_text">Post Text</string>
+    <string name="error_empty_content">The field cannot be empty</string>
+    <string name="cancel_editing">Cancel editing</string>
 </resources>

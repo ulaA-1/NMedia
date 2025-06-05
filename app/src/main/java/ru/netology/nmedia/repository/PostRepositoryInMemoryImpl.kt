@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dto.Post
+import java.text.SimpleDateFormat
+import java.util.*
 
 class PostRepositoryInMemoryImpl(
     private val context: Context
@@ -53,6 +55,7 @@ class PostRepositoryInMemoryImpl(
         )
     )
 
+    private var nextId = 5L
     private val data = MutableLiveData(posts)
 
     override fun getAll(): LiveData<List<Post>> = data
@@ -72,5 +75,26 @@ class PostRepositoryInMemoryImpl(
             if (post.id != id) post else post.copy(shares = post.shares + 1)
         }
         data.value = posts
+    }
+
+    override fun removeById(id: Long) {
+        posts = posts.filter { it.id != id }
+        data.value = posts
+    }
+
+    override fun save(post: Post) {
+        if (post.id == 0L) {
+            posts = listOf(post.copy(id = nextId++, author = "Me", published = getCurrentDate())) + posts
+        } else {
+            posts = posts.map {
+                if (it.id != post.id) it else it.copy(content = post.content)
+            }
+        }
+        data.value = posts
+    }
+
+    private fun getCurrentDate(): String {
+        val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        return formatter.format(Date())
     }
 }

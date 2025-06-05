@@ -1,21 +1,30 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 
+interface OnInteractionListener {
+    fun onLike(post: Post)
+    fun onShare(post: Post)
+    fun onRemove(post: Post)
+    fun onEdit(post: Post)
+}
+
 class PostsAdapter(
-    private val onLike: (Post) -> Unit,
-    private val onShare: (Post) -> Unit
+    private val listener: OnInteractionListener
 ) : ListAdapter<Post, PostsAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
         val binding = CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return PostViewHolder(binding, onLike, onShare)
+        return PostViewHolder(binding, listener)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -24,8 +33,7 @@ class PostsAdapter(
 
     class PostViewHolder(
         private val binding: CardPostBinding,
-        private val onLike: (Post) -> Unit,
-        private val onShare: (Post) -> Unit
+        private val listener: OnInteractionListener
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(post: Post) = with(binding) {
@@ -38,12 +46,32 @@ class PostsAdapter(
             viewCount.text = formatCount(post.views)
 
             likeIcon.setImageResource(
-                if (post.likedByMe) ru.netology.nmedia.R.drawable.ic_like_red
-                else ru.netology.nmedia.R.drawable.ic_like
+                if (post.likedByMe) R.drawable.ic_like_red
+                else R.drawable.ic_like
             )
 
-            likeIcon.setOnClickListener { onLike(post) }
-            shareIcon.setOnClickListener { onShare(post) }
+            likeIcon.setOnClickListener { listener.onLike(post) }
+            shareIcon.setOnClickListener { listener.onShare(post) }
+
+            menuButton.setOnClickListener { view: View ->
+                PopupMenu(view.context, view).apply {
+                    inflate(R.menu.post_actions)
+                    setOnMenuItemClickListener {
+                        when (it.itemId) {
+                            R.id.remove -> {
+                                listener.onRemove(post)
+                                true
+                            }
+                            R.id.edit -> {
+                                listener.onEdit(post)
+                                true
+                            }
+                            else -> false
+                        }
+                    }
+                    show()
+                }
+            }
         }
 
         private fun formatCount(count: Int): String = when {

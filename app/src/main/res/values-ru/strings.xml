@@ -11,4 +11,10 @@
     <string name="FiveHundred">500</string>
     <string name="ten">10</string>
     <string name="menuButton">Кнопка меню</string>
+    <string name="menu_remove">Удалить</string>
+    <string name="menu_edit">Редактировать</string>
+    <string name="description_post_save">Сохранить</string>
+    <string name="post_text">Опубликовать пост</string>
+    <string name="error_empty_content">Поле не может быть пустым</string>
+    <string name="cancel_editing">Отмена редактирования</string>
 </resources>
