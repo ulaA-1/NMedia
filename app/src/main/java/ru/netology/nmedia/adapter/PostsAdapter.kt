@@ -41,19 +41,21 @@ class PostsAdapter(
             date.text = post.published
             contentText.text = post.content
 
-            likeCount.text = formatCount(post.likes)
-            shareCount.text = formatCount(post.shares)
-            viewCount.text = formatCount(post.views)
+            likeButton.apply {
+                text = formatCount(post.likes)
+                isChecked = post.likedByMe
+                setOnClickListener { listener.onLike(post) }
+            }
 
-            likeIcon.setImageResource(
-                if (post.likedByMe) R.drawable.ic_like_red
-                else R.drawable.ic_like
-            )
+            shareButton.apply {
+                text = formatCount(post.shares)
+                setOnClickListener { listener.onShare(post) }
+            }
 
-            likeIcon.setOnClickListener { listener.onLike(post) }
-            shareIcon.setOnClickListener { listener.onShare(post) }
+            viewButton.text = formatCount(post.views)
 
-            menuButton.setOnClickListener { view: View ->
+
+            menuButton.setOnClickListener { view ->
                 PopupMenu(view.context, view).apply {
                     inflate(R.menu.post_actions)
                     setOnMenuItemClickListener {
@@ -62,10 +64,12 @@ class PostsAdapter(
                                 listener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 listener.onEdit(post)
                                 true
                             }
+
                             else -> false
                         }
                     }
