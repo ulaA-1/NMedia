@@ -18,4 +18,8 @@
     <string name="post_text">Post Text</string>
     <string name="error_empty_content">The field cannot be empty</string>
     <string name="cancel_editing">Cancel editing</string>
+    <string name="chooser_share_post">Share Post</string>
+    <string name="edit_post_text">Edit Post</string>
+
+
 </resources>
