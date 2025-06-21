@@ -90,7 +90,7 @@
         app:iconGravity="textStart"
         app:iconPadding="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/contentText" />
+        app:layout_constraintTop_toBottomOf="@id/videoBlock" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/shareButton"
@@ -123,5 +123,35 @@
         app:layout_constraintBottom_toBottomOf="@id/likeButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/likeButton" />
+
+    <FrameLayout
+        android:id="@+id/videoBlock"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:background="@color/video_placeholder_background"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/contentText">
+
+        <ImageView
+            android:id="@+id/videoThumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_video_placeholder" />
+
+        <ImageButton
+            android:id="@+id/playButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/play_video"
+            android:src="@drawable/ic_play_circle_outline" />
+
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

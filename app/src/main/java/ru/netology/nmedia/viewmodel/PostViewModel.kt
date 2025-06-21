@@ -42,4 +42,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun resetEdited() {
         edited.value = empty
     }
+
+    //fun save(): String? {
+
 }
+
