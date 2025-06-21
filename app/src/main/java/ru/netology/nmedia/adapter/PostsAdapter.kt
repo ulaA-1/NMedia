@@ -1,5 +1,7 @@
 package ru.netology.nmedia.adapter
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -54,7 +56,6 @@ class PostsAdapter(
 
             viewButton.text = formatCount(post.views)
 
-
             menuButton.setOnClickListener { view ->
                 PopupMenu(view.context, view).apply {
                     inflate(R.menu.post_actions)
@@ -75,6 +76,22 @@ class PostsAdapter(
                     }
                     show()
                 }
+            }
+
+            if (!post.video.isNullOrBlank()) {
+                videoBlock.visibility = View.VISIBLE
+                videoThumbnail.setImageResource(R.drawable.ic_video_placeholder)
+                val clickListener = View.OnClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(post.video))
+                    if (intent.resolveActivity(root.context.packageManager) != null) {
+                        root.context.startActivity(intent)
+                    } else {
+                    }
+                }
+                videoBlock.setOnClickListener(clickListener)
+                playButton.setOnClickListener(clickListener)
+            } else {
+                videoBlock.visibility = View.GONE
             }
         }
 

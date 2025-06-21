@@ -17,44 +17,56 @@ class PostRepositoryInMemoryImpl(
             id = 1,
             author = context.getString(R.string.Netology),
             published = context.getString(R.string.Data),
-            content = context.getString(R.string.NetologyText) + " (пост 1)",
+            content = context.getString(R.string.NetologyText),
             likedByMe = false,
             likes = 1999,
             shares = 5,
             views = 12_500
         ),
+
         Post(
             id = 2,
             author = context.getString(R.string.Netology),
             published = context.getString(R.string.Data),
-            content = context.getString(R.string.NetologyText) + " (пост 2)",
+            content =
+                " Привет, это новая Нетология, и у нас для вас полезный разбор актуальной темы. " +
+                        "Быстрее переходи на Rutube по ссылке",
             likedByMe = true,
-            likes = 2500,
-            shares = 12,
-            views = 15_000
+            likes = 3_000,
+            shares = 25,
+            views = 20_000,
+            video = "https://rutube.ru/video/e660f8ff093ce6029ddca2907dafb88c/?r=wd"
         ),
+
         Post(
             id = 3,
             author = context.getString(R.string.Netology),
             published = context.getString(R.string.Data),
-            content = context.getString(R.string.NetologyText) + " (пост 3)",
+            content = context.getString(R.string.NetologyText),
+            likedByMe = false,
+            likes = 2500,
+            shares = 12,
+            views = 15_000
+        ), Post(
+            id = 4,
+            author = context.getString(R.string.Netology),
+            published = context.getString(R.string.Data),
+            content = context.getString(R.string.NetologyText),
             likedByMe = false,
             likes = 1750,
             shares = 7,
             views = 9_500
-        ),
-        Post(
-            id = 4,
+        ), Post(
+            id = 5,
             author = context.getString(R.string.Netology),
             published = context.getString(R.string.Data),
-            content = context.getString(R.string.NetologyText) + " (пост 4)",
-            likedByMe = true,
+            content = context.getString(R.string.NetologyText),
+            likedByMe = false,
             likes = 3000,
             shares = 25,
             views = 20_000
         )
     )
-
     private var nextId = 5L
     private val data = MutableLiveData(posts)
 
@@ -84,7 +96,11 @@ class PostRepositoryInMemoryImpl(
 
     override fun save(post: Post) {
         if (post.id == 0L) {
-            posts = listOf(post.copy(id = nextId++, author = "Me", published = getCurrentDate())) + posts
+            posts = listOf(
+                post.copy(
+                    id = nextId++, author = "Me", published = getCurrentDate()
+                )
+            ) + posts
         } else {
             posts = posts.map {
                 if (it.id != post.id) it else it.copy(content = post.content)

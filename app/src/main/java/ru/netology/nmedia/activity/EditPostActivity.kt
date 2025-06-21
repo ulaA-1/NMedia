@@ -16,6 +16,7 @@ class EditPostActivity : AppCompatActivity() {
         val originalText = intent.getStringExtra(Intent.EXTRA_TEXT)
         binding.content.setText(originalText)
         binding.content.requestFocus()
+        binding.content.setSelection(0)
 
         binding.editButton.setOnClickListener {
             val newContent = binding.content.text.toString()

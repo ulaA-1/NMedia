@@ -19,5 +19,5 @@
     <string name="cancel_editing">Отмена редактирования</string>
     <string name="chooser_share_post">Поделиться постом</string>
     <string name="edit_post_text">Редактировать пост</string>
-
+    <string name="play_video">Воспроизведение видео</string>
 </resources>

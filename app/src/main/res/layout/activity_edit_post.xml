@@ -7,24 +7,26 @@
     android:layout_height="match_parent"
     tools:context=".activity.EditPostActivity">
 
-    <androidx.core.widget.NestedScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="56dp">
+        android:layout_marginBottom="72dp"
+        android:fillViewport="true">
 
         <EditText
             android:id="@+id/content"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:gravity="top"
+            android:gravity="top|start"
             android:hint="@string/edit_post_text"
-            android:importantForAutofill="no"
             android:inputType="textMultiLine"
-            android:maxLines="10"
-            android:minHeight="48dp"
-            android:padding="8dp" />
-    </androidx.core.widget.NestedScrollView>
+            android:minLines="6"
+            android:overScrollMode="ifContentScrolls"
+            android:padding="16dp"
+            android:scrollbars="vertical" />
+
+    </ScrollView>
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
