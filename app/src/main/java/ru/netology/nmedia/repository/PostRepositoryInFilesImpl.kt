@@ -11,9 +11,9 @@ import ru.netology.nmedia.dto.Post
 import java.text.SimpleDateFormat
 import java.util.*
 
-class PostRepositoryInMemoryImpl(private val context: Context) : PostRepository {
+class PostRepositoryInFilesImpl(private val context: Context) : PostRepository {
 
-    private val prefs = context.getSharedPreferences("repo", Context.MODE_PRIVATE)
+
     private var posts = emptyList<Post>()
         set(value) {
             field = value
@@ -24,23 +24,29 @@ class PostRepositoryInMemoryImpl(private val context: Context) : PostRepository 
     private val data = MutableLiveData(posts)
 
     init {
-        prefs.getString(KEY_POSTS, null)?.let {
-            posts = gson.fromJson(it, type)
-            nextId = (posts.maxOfOrNull { it.id } ?: 0) + 1
+        val file = context.filesDir.resolve(FILENAME)
+        if (file.exists()) {
+            context.openFileInput(FILENAME).bufferedReader().use {
+                posts = gson.fromJson(it, type)
+                nextId = (posts.maxOfOrNull { it.id } ?: 0) + 1
+            }
         }
-        nextId = prefs.getLong("1", 1)
     }
 
     override fun getAll(): LiveData<List<Post>> = data
 
     override fun likeById(id: Long) {
         posts = posts.map { post ->
-            if (post.id != id) post else post.copy(
-                likedByMe = !post.likedByMe,
-                likes = if (post.likedByMe) post.likes - 1 else post.likes + 1
-            )
+            if (post.id != id) {
+                post
+            } else {
+                val newLikedByMe = !post.likedByMe
+                val newLikes = if (newLikedByMe) post.likes + 1 else post.likes - 1
+                post.copy(likedByMe = newLikedByMe, likes = newLikes)
+            }
         }
     }
+
 
     override fun shareById(id: Long) {
         posts = posts.map { post ->
@@ -64,13 +70,14 @@ class PostRepositoryInMemoryImpl(private val context: Context) : PostRepository 
                 if (it.id != post.id) it else it.copy(content = post.content)
             }
         }
+        sync()
     }
 
     private fun sync() {
-        prefs.edit {
-            putString(KEY_POSTS, gson.toJson(posts))
-            putLong("1", nextId)
+        context.openFileOutput(FILENAME, Context.MODE_PRIVATE).bufferedWriter().use {
+            it.write(gson.toJson(posts))
         }
+
     }
 
     private fun getCurrentDate(): String {
@@ -80,7 +87,7 @@ class PostRepositoryInMemoryImpl(private val context: Context) : PostRepository 
     }
 
     companion object {
-        private const val KEY_POSTS = "posts"
+        private const val FILENAME = "posts.json"
         private val gson = Gson()
         private val type = TypeToken.getParameterized(List::class.java, Post::class.java).type
 
