@@ -18,6 +18,7 @@ interface OnInteractionListener {
     fun onShare(post: Post)
     fun onRemove(post: Post)
     fun onEdit(post: Post)
+    fun onVideo(post: Post)
 }
 
 class PostsAdapter(
@@ -82,11 +83,7 @@ class PostsAdapter(
                 videoBlock.visibility = View.VISIBLE
                 videoThumbnail.setImageResource(R.drawable.ic_video_placeholder)
                 val clickListener = View.OnClickListener {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(post.video))
-                    if (intent.resolveActivity(root.context.packageManager) != null) {
-                        root.context.startActivity(intent)
-                    } else {
-                    }
+                    listener.onVideo(post)
                 }
                 videoBlock.setOnClickListener(clickListener)
                 playButton.setOnClickListener(clickListener)
