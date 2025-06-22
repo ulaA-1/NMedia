@@ -45,5 +45,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     //fun save(): String? {
 
+    fun clearEdited(){
+        edited.value = empty
+    }
 }
 

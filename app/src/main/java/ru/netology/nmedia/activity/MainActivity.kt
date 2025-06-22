@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
         editPostLauncher = registerForActivityResult(EditPostResultContract) { editedContent ->
             if (editedContent != null) {
                 viewModel.changeContentAndSave(editedContent)
+            } else {
+                viewModel.clearEdited()
             }
         }
 
@@ -50,6 +52,14 @@ class MainActivity : AppCompatActivity() {
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
                 editPostLauncher.launch(post.content)
+            }
+
+            override fun onVideo(post: Post) {
+                post.video?.let {
+                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it))
+                    val chooser = Intent.createChooser(intent, getString(R.string.play_video))
+                    startActivity(chooser)
+                }
             }
         })
 
