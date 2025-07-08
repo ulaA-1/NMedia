@@ -19,6 +19,7 @@ interface OnInteractionListener {
     fun onRemove(post: Post)
     fun onEdit(post: Post)
     fun onVideo(post: Post)
+    fun onPostClicked(post: Post)
 }
 
 class PostsAdapter(
@@ -89,6 +90,9 @@ class PostsAdapter(
                 playButton.setOnClickListener(clickListener)
             } else {
                 videoBlock.visibility = View.GONE
+            }
+            root.setOnClickListener {
+                listener.onPostClicked(post)
             }
         }
 
