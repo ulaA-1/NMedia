@@ -6,7 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositorySQLiteImpl
+import ru.netology.nmedia.repository.PostRepositoryRoomImpl
 import ru.netology.nmedia.db.AppDb
 
 private val empty = Post(
@@ -19,22 +19,44 @@ private val empty = Post(
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: PostRepository
-
-    init {
-        val db = AppDb.getInstance(application)
-        repository = PostRepositorySQLiteImpl(db.postDao)
-    }
+    private val repository: PostRepository = PostRepositoryRoomImpl(
+        AppDb.getInstance(application).postDao
+    )
 
     val data: LiveData<List<Post>> = repository.getAll()
-    val edited: MutableLiveData<Post> = MutableLiveData(empty)
+    val edited = MutableLiveData(empty)
 
-    fun likeById(id: Long) = repository.likeById(id)
-    fun shareById(id: Long) = repository.shareById(id)
-    fun removeById(id: Long) = repository.removeById(id)
+    fun save() {
+        edited.value?.let {
+            repository.save(it)
+            resetEdited()
+        }
+    }
 
     fun edit(post: Post) {
         edited.value = post
+    }
+
+    fun changeContent(content: String) {
+        val text = content.trim()
+        if (edited.value?.content == text) return
+        edited.value = edited.value?.copy(content = text)
+    }
+
+    fun resetEdited() {
+        edited.value = empty
+    }
+
+    fun likeById(id: Long) {
+        repository.likeById(id)
+    }
+
+    fun removeById(id: Long) {
+        repository.removeById(id)
+    }
+
+    fun shareById(id: Long) {
+        repository.shareById(id)
     }
 
     fun changeContentAndSave(text: String) {
@@ -46,12 +68,4 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         resetEdited()
     }
 
-    fun resetEdited() {
-        edited.value = empty
-    }
-
-    fun clearEdited() {
-        edited.value = empty
-    }
 }
-
