@@ -47,7 +47,6 @@ class PostFragment : Fragment() {
                 }
                 val chooser = Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(chooser)
-                viewModel.shareById(post.id)
             }
 
 
@@ -73,14 +72,15 @@ class PostFragment : Fragment() {
             }
         })
 
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val post = posts.find { it.id == postId }
+        viewModel.data.observe(viewLifecycleOwner) { feedModel ->
+            val post = feedModel.posts.find { it.id == postId }
             if (post != null) {
                 holder.bind(post)
             } else {
                 findNavController().navigateUp()
             }
         }
+
 
         return binding.root
     }

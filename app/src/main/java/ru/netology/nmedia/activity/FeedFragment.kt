@@ -1,11 +1,13 @@
 package ru.netology.nmedia.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -36,9 +38,9 @@ class FeedFragment : Fragment() {
                     putExtra(Intent.EXTRA_TEXT, post.content)
                     type = "text/plain"
                 }
-                val chooser = Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                val chooser =
+                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(chooser)
-                viewModel.shareById(post.id)
             }
 
             override fun onRemove(post: Post) = viewModel.removeById(post.id)
@@ -53,29 +55,41 @@ class FeedFragment : Fragment() {
 
             override fun onVideo(post: Post) {
                 post.video?.let {
-                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(it))
-                    val chooser = Intent.createChooser(intent, getString(R.string.play_video))
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    val chooser =
+                        Intent.createChooser(intent, getString(R.string.play_video))
                     startActivity(chooser)
                 }
             }
 
             override fun onPostClicked(post: Post) {
-                val bundle = Bundle().apply {
-                    putLong("postId", post.id)
-                }
+                val bundle = Bundle().apply { putLong("postId", post.id) }
                 findNavController().navigate(R.id.action_feedFragment_to_postFragment, bundle)
             }
         })
 
         binding.list.adapter = adapter
 
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val newPost = adapter.currentList.size < posts.size
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            val posts = state.posts
+            val isNewPostAdded = adapter.currentList.size < posts.size
+
             adapter.submitList(posts) {
-                if (newPost) {
-                    binding.list.scrollToPosition(0)
-                }
+                if (isNewPostAdded) binding.list.scrollToPosition(0)
             }
+
+            binding.progress.isVisible = state.loading
+            binding.errorGroup.isVisible = state.error
+            binding.emptyText.isVisible = state.empty
+        }
+
+        viewModel.postCreated.observe(viewLifecycleOwner) {
+            binding.list.scrollToPosition(0)
+        }
+
+
+        binding.retryButton.setOnClickListener {
+            viewModel.loadPosts()
         }
 
         binding.saveButton.setOnClickListener {

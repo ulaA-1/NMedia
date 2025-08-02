@@ -20,4 +20,7 @@
     <string name="chooser_share_post">Поделиться постом</string>
     <string name="edit_post_text">Редактировать пост</string>
     <string name="play_video">Воспроизведение видео</string>
+    <string name="error_loading">Что-то пошло не так. Попробуйте позднее</string>
+    <string name="retry_loading">Повторить</string>
+    <string name="empty_posts">Постов нет.\nЕсли создадите новый пост, то он появится здесь</string>
 </resources>
