@@ -39,7 +39,7 @@ class FeedPostFragment : Fragment() {
                 }
                 val chooser = Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(chooser)
-                viewModel.shareById(post.id)
+                // viewModel.shareById(post.id)
             }
 
             override fun onRemove(post: Post) = viewModel.removeById(post.id)
@@ -71,9 +71,11 @@ class FeedPostFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
+        viewModel.data.observe(viewLifecycleOwner) { feedModel ->
+            val posts = feedModel.posts.orEmpty()
             adapter.submitList(posts)
         }
+
 
         binding.saveButton.setOnClickListener {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
