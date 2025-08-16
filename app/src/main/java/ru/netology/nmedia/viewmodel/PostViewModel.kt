@@ -37,15 +37,31 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadPosts() {
         thread {
-            _data.postValue(FeedModel(loading = true))
+            _data.postValue(_data.value?.copy(loading = true) ?: FeedModel(loading = true))
             try {
                 val posts = repository.getAll()
-                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
+                _data.postValue(
+                    _data.value?.copy(
+                        posts = posts,
+                        empty = posts.isEmpty(),
+                        loading = false,
+                        error = false
+                    ) ?: FeedModel(posts = posts, empty = posts.isEmpty())
+                )
             } catch (e: IOException) {
-                _data.postValue(FeedModel(error = true))
+                _data.postValue(
+                    FeedModel(
+                        posts = emptyList(),
+                        loading = false,
+                        error = true,
+                        empty = true
+                    )
+                )
             }
         }
+
     }
+
 
     fun save(content: String) {
         thread {
@@ -61,16 +77,20 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 val saved = repository.save(newPost)
                 val updated = _data.value?.posts.orEmpty().toMutableList()
                 updated.add(0, saved)
-                _data.postValue(_data.value?.copy(posts = updated, loading = false))
+                _data.postValue(
+                    _data.value?.copy(
+                        posts = updated,
+                        loading = false,
+                        error = false,
+                        empty = updated.isEmpty()
+                    )
+                )
                 _postCreated.postValue(Unit)
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(error = true, loading = false))
             }
         }
     }
-
-
-
 
 
     fun changeContentAndSave(content: String) {
@@ -81,7 +101,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                     try {
                         val updatedPost = repository.save(post.copy(content = text))
                         val currentPosts = _data.value?.posts.orEmpty()
-                        val newPosts = currentPosts.map { if (it.id == updatedPost.id) updatedPost else it }
+                        val newPosts =
+                            currentPosts.map { if (it.id == updatedPost.id) updatedPost else it }
                         _data.postValue(_data.value?.copy(posts = newPosts))
                         _postCreated.postValue(Unit)
                     } catch (e: IOException) {
@@ -111,10 +132,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 val newList = current.map { if (it.id == id) updated else it }
                 _data.postValue(_data.value?.copy(posts = newList))
-            } catch (_: IOException) { }
+            } catch (_: IOException) {
+            }
         }
     }
-
 
 
     fun removeById(id: Long) {
@@ -136,7 +157,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 val current = _data.value?.posts.orEmpty()
                 val newList = current.map { if (it.id == id) updated else it }
                 _data.postValue(_data.value?.copy(posts = newList))
-            } catch (_: IOException) { }
+            } catch (_: IOException) {
+            }
         }
     }
 }
+
