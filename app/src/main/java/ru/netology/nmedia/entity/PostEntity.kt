@@ -9,6 +9,7 @@ data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
     val author: String,
+    val authorAvatar: String?,
     val published: String,
     val content: String,
     val likedByMe: Boolean = false,
@@ -17,12 +18,24 @@ data class PostEntity(
     var views: Int = 0,
     val video: String? = null
 ) {
-    fun toDto() = Post(id, author, published, content, likedByMe, likes, shares, views, video)
+    fun toDto() = Post(
+        id,
+        author,
+        authorAvatar,
+        published,
+        content,
+        likedByMe,
+        likes,
+        shares,
+        views,
+        video
+    )
 
     companion object {
         fun fromDto(post: Post) = PostEntity(
             post.id,
             post.author,
+            post.authorAvatar,
             post.published,
             post.content,
             post.likedByMe,
@@ -33,4 +46,3 @@ data class PostEntity(
         )
     }
 }
-
