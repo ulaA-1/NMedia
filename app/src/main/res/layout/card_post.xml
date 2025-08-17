@@ -9,7 +9,7 @@
     tools:context=".activity.FeedFragment">
 
     <ImageView
-        android:id="@+id/logo"
+        android:id="@+id/avatar"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_launcher_foreground"
@@ -39,8 +39,8 @@
         android:text="@string/Netology"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@id/menu_button"
-        app:layout_constraintStart_toEndOf="@id/logo"
-        app:layout_constraintTop_toTopOf="@id/logo" />
+        app:layout_constraintStart_toEndOf="@id/avatar"
+        app:layout_constraintTop_toTopOf="@id/avatar" />
 
     <TextView
         android:id="@+id/date"
@@ -57,7 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="logo,date,menu_button" />
+        app:constraint_referenced_ids="avatar,date,menu_button" />
 
     <TextView
         android:id="@+id/contentText"

@@ -11,6 +11,7 @@ import ru.netology.nmedia.util.SingleLiveEvent
 private val emptyPost = Post(
     id = 0L,
     author = "",
+    authorAvatar = null,
     content = "",
     likedByMe = false,
     likes = 0,
@@ -68,6 +69,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             content = content,
             published = "",
             likedByMe = false,
+            authorAvatar = null,
             likes = 0
         )
 
