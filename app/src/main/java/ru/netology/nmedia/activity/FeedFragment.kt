@@ -38,8 +38,7 @@ class FeedFragment : Fragment() {
                     putExtra(Intent.EXTRA_TEXT, post.content)
                     type = "text/plain"
                 }
-                val chooser =
-                    Intent.createChooser(intent, getString(R.string.chooser_share_post))
+                val chooser = Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(chooser)
             }
 
@@ -56,8 +55,7 @@ class FeedFragment : Fragment() {
             override fun onVideo(post: Post) {
                 post.video?.let {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
-                    val chooser =
-                        Intent.createChooser(intent, getString(R.string.play_video))
+                    val chooser = Intent.createChooser(intent, getString(R.string.play_video))
                     startActivity(chooser)
                 }
             }
@@ -81,12 +79,12 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
+            binding.errorGroup.isVisible = state.error
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
             binding.list.scrollToPosition(0)
         }
-
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
