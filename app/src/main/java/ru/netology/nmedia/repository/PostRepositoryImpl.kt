@@ -1,191 +1,111 @@
 package ru.netology.nmedia.repository
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dto.Post
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 
 class PostRepositoryImpl : PostRepository {
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .build()
-
-    private val gson = Gson()
-    private val typeToken = object : TypeToken<List<Post>>() {}
-
-    companion object {
-        private const val BASE_URL = "http://10.0.2.2:9999"
-        private val jsonType = "application/json".toMediaType()
-    }
-
-    private fun parsePosts(body: String): List<Post> {
-        return gson.fromJson(body, typeToken.type)
-    }
-
-    private fun parsePost(body: String): Post {
-        return gson.fromJson(body, Post::class.java)
-    }
 
     override fun getAllAsync(callback: PostRepository.GetAllCallback) {
-        val request = Request.Builder()
-            .url("$BASE_URL/api/slow/posts")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onError(e)
+        PostsApi.retrofitService.getAll().enqueue(object : Callback<List<Post>> {
+            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
+                }
+                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
+                callback.onSuccess(body)
             }
 
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    try {
-                        if (!it.isSuccessful) {
-                            callback.onError(IOException("Unexpected code $it"))
-                            return
-                        }
-
-                        val body = it.body?.string()
-                            ?: return callback.onError(IOException("Response body is null"))
-
-                        val posts = try {
-                            parsePosts(body)
-                        } catch (e: Exception) {
-                            return callback.onError(IOException("Invalid response format: ${e.message}"))
-                        }
-
-                        callback.onSuccess(posts)
-                    } catch (e: Exception) {
-                        callback.onError(IOException("Error parsing response: ${e.message}"))
-                    }
-                }
+            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
 
     override fun likeByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        val request = Request.Builder()
-            .post("".toRequestBody())
-            .url("$BASE_URL/api/posts/$id/likes")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = callback.onError(e)
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(IOException("Unexpected code $it"))
-                        return
-                    }
-                    val body =
-                        it.body?.string() ?: return callback.onError(IOException("Body is null"))
-                    try {
-                        callback.onSuccess(parsePost(body))
-                    } catch (e: Exception) {
-                        callback.onError(IOException("Parse error: ${e.message}"))
-                    }
+        PostsApi.retrofitService.likeById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
                 }
+                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
+                callback.onSuccess(body)
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
 
     override fun unlikeByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        val request = Request.Builder()
-            .delete()
-            .url("$BASE_URL/api/posts/$id/likes")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = callback.onError(e)
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(IOException("Unexpected code $it"))
-                        return
-                    }
-                    val body =
-                        it.body?.string() ?: return callback.onError(IOException("Body is null"))
-                    try {
-                        callback.onSuccess(parsePost(body))
-                    } catch (e: Exception) {
-                        callback.onError(IOException("Parse error: ${e.message}"))
-                    }
+        PostsApi.retrofitService.dislikeById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
                 }
+                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
+                callback.onSuccess(body)
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
 
     override fun saveAsync(post: Post, callback: PostRepository.PostCallback) {
-        val request = Request.Builder()
-            .post(gson.toJson(post).toRequestBody(jsonType))
-            .url("$BASE_URL/api/slow/posts")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = callback.onError(e)
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(IOException("Unexpected code $it"))
-                        return
-                    }
-                    val body =
-                        it.body?.string() ?: return callback.onError(IOException("Body is null"))
-                    try {
-                        callback.onSuccess(parsePost(body))
-                    } catch (e: Exception) {
-                        callback.onError(IOException("Parse error: ${e.message}"))
-                    }
+        PostsApi.retrofitService.save(post).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
                 }
+                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
+                callback.onSuccess(body)
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
 
     override fun removeByIdAsync(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .delete()
-            .url("$BASE_URL/api/slow/posts/$id")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = callback.onError(e)
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(IOException("Unexpected code $it"))
-                        return
-                    }
-                    callback.onSuccess()
+        PostsApi.retrofitService.removeById(id).enqueue(object : Callback<Unit> {
+            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
                 }
+                callback.onSuccess()
+            }
+
+            override fun onFailure(call: Call<Unit>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
 
     override fun shareByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        val request = Request.Builder()
-            .post("".toRequestBody())
-            .url("$BASE_URL/api/slow/posts/$id/share")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) = callback.onError(e)
-            override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!it.isSuccessful) {
-                        callback.onError(IOException("Unexpected code $it"))
-                        return
-                    }
-                    val body =
-                        it.body?.string() ?: return callback.onError(IOException("Body is null"))
-                    try {
-                        callback.onSuccess(parsePost(body))
-                    } catch (e: Exception) {
-                        callback.onError(IOException("Parse error: ${e.message}"))
-                    }
+        PostsApi.retrofitService.shareById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (!response.isSuccessful) {
+                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
+                    return
                 }
+                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
+                callback.onSuccess(body)
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                callback.onError(IOException("Ошибка сети: ${t.message}", t))
             }
         })
     }
