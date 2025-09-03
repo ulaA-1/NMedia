@@ -6,43 +6,50 @@ import ru.netology.nmedia.dto.Post
 
 @Entity
 data class PostEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     val id: Long,
     val author: String,
-    val authorAvatar: String?,
-    val published: String,
+    val authorAvatar: String? = null,
     val content: String,
-    val likedByMe: Boolean = false,
-    var likes: Int = 0,
-    var shares: Int = 0,
-    var views: Int = 0,
-    val video: String? = null
+    val published: String,
+    val likedByMe: Boolean,
+    val likes: Int = 0,
+    val shares: Int = 0,
+    val views: Int = 0,
+    val video: String? = null,
+    val isVisible: Boolean = true,
 ) {
     fun toDto() = Post(
-        id,
-        author,
-        authorAvatar,
-        published,
-        content,
-        likedByMe,
-        likes,
-        shares,
-        views,
-        video
+        id = id,
+        author = author,
+        authorAvatar = authorAvatar,
+        published = published,
+        content = content,
+        likedByMe = likedByMe,
+        likes = likes,
+        shares = shares,
+        views = views,
+        video = video
     )
 
     companion object {
-        fun fromDto(post: Post) = PostEntity(
-            post.id,
-            post.author,
-            post.authorAvatar,
-            post.published,
-            post.content,
-            post.likedByMe,
-            post.likes,
-            post.shares,
-            post.views,
-            post.video
-        )
+        fun fromDto(dto: Post, visible: Boolean = true) =
+            PostEntity(
+                id = dto.id,
+                author = dto.author,
+                authorAvatar = dto.authorAvatar,
+                content = dto.content,
+                published = dto.published,
+                likedByMe = dto.likedByMe,
+                likes = dto.likes,
+                shares = dto.shares,
+                views = dto.views,
+                video = dto.video,
+                isVisible = visible
+            )
     }
 }
+
+fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
+fun List<Post>.toEntity(visible: Boolean = true): List<PostEntity> =
+    map { PostEntity.fromDto(it, visible) }
