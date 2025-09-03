@@ -1,112 +1,79 @@
 package ru.netology.nmedia.repository
 
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.*
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.NetworkError
+import ru.netology.nmedia.error.UnknownError
 import java.io.IOException
 
-class PostRepositoryImpl : PostRepository {
+class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
+    override val data = dao.getAll()
+        .map(List<PostEntity>::toDto)
+        .flowOn(Dispatchers.Default)
 
-    override fun getAllAsync(callback: PostRepository.GetAllCallback) {
-        PostsApi.retrofitService.getAll().enqueue(object : Callback<List<Post>> {
-            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
-                callback.onSuccess(body)
-            }
-
-            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun getAll() {
+        try {
+            val response = PostsApi.service.getAll()
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.removeAll()
+            dao.insert(body.toEntity(true))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override fun likeByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        PostsApi.retrofitService.likeById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
-                callback.onSuccess(body)
-            }
-
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun dislikeById(id: Long) {
+        val post = dao.getPostById(id) ?: return
+        dao.updatePost(post.copy(likedByMe = false, likes = post.likes - 1))
     }
 
-    override fun unlikeByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        PostsApi.retrofitService.dislikeById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
-                callback.onSuccess(body)
-            }
+    override fun getNewerCount(): Flow<Int> = dao.countHidden()
 
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun save(post: Post) {
+        try {
+            val response = PostsApi.service.save(post)
+            if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(PostEntity.fromDto(body))
+        } catch (e: IOException) {
+            throw NetworkError
+        } catch (e: Exception) {
+            throw UnknownError
+        }
     }
 
-    override fun saveAsync(post: Post, callback: PostRepository.PostCallback) {
-        PostsApi.retrofitService.save(post).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
-                callback.onSuccess(body)
-            }
-
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun removeById(id: Long) {
+        dao.removeById(id)
+        val response = PostsApi.service.removeById(id)
+        if (!response.isSuccessful) throw ApiError(response.code(), response.message())
     }
 
-    override fun removeByIdAsync(id: Long, callback: PostRepository.ActionCallback) {
-        PostsApi.retrofitService.removeById(id).enqueue(object : Callback<Unit> {
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                callback.onSuccess()
-            }
-
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun likeById(id: Long) {
+        val response = PostsApi.service.likeById(id)
+        if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+        val body = response.body() ?: throw ApiError(response.code(), response.message())
+        dao.insert(PostEntity.fromDto(body))
     }
 
-    override fun shareByIdAsync(id: Long, callback: PostRepository.PostCallback) {
-        PostsApi.retrofitService.shareById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (!response.isSuccessful) {
-                    callback.onError(IOException("Ошибка сервера: ${response.code()} - ${response.message()}"))
-                    return
-                }
-                val body = response.body() ?: return callback.onError(IOException("Тело ответа пусто"))
-                callback.onSuccess(body)
-            }
+    override suspend fun checkNewer() {
+        val maxId = dao.maxId() ?: 0L
+        val response = PostsApi.service.getNewer(maxId)
+        if (!response.isSuccessful) throw ApiError(response.code(), response.message())
+        val body = response.body() ?: throw ApiError(response.code(), response.message())
+        if (body.isNotEmpty()) {
+            dao.insert(body.toEntity(false))
+        }
+    }
 
-            override fun onFailure(call: Call<Post>, t: Throwable) {
-                callback.onError(IOException("Ошибка сети: ${t.message}", t))
-            }
-        })
+    override suspend fun markAllVisible() {
+        dao.showAllHidden()
     }
 }

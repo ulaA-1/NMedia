@@ -15,16 +15,18 @@ abstract class AppDb : RoomDatabase() {
         @Volatile
         private var instance: AppDb? = null
 
-        fun getInstance(context: Context): AppDb {
-            return instance ?: synchronized(this) {
+        fun getInstance(context: Context): AppDb =
+            instance ?: synchronized(this) {
                 instance ?: buildDatabase(context).also { instance = it }
             }
-        }
 
         private fun buildDatabase(context: Context) =
-            Room.databaseBuilder(context, AppDb::class.java, "app.db")
+            Room.databaseBuilder(
+                context.applicationContext,
+                AppDb::class.java,
+                "app.db"
+            )
                 .fallbackToDestructiveMigration()
-                .allowMainThreadQueries()
                 .build()
     }
 }
