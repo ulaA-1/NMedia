@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,8 +21,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = PostRepositoryImpl(AppDb.getInstance(application).postDao())
 
-    private val _data = MutableLiveData(FeedModel())
-    val data: LiveData<FeedModel> get() = _data
+    val data: LiveData<FeedModel> = repository.data
+        .asLiveData()
+        .map { posts -> FeedModel(posts = posts, empty = posts.isEmpty()) }
 
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState> get() = _dataState
@@ -36,16 +38,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         loadPosts()
-        observePosts()
         startNewerChecker()
-    }
-
-    private fun observePosts() {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.data.collect { posts ->
-                _data.postValue(FeedModel(posts))
-            }
-        }
     }
 
     private fun startNewerChecker() {
@@ -77,25 +70,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun likeById(id: Long) = viewModelScope.launch {
         try {
-            val post = _data.value?.posts?.find { it.id == id } ?: return@launch
-            val liked = !post.likedByMe
-
-            if (liked) repository.likeById(id) else repository.dislikeById(id)
-
-            val updatedPosts = _data.value?.posts.orEmpty().map { p ->
-                if (p.id == id) p.copy(
-                    likedByMe = liked,
-                    likes = if (liked) p.likes + 1 else p.likes - 1
-                ) else p
-            }
-
-            _data.postValue(_data.value?.copy(posts = updatedPosts))
-
+            val post = data.value?.posts?.find { it.id == id } ?: return@launch
+            if (post.likedByMe) repository.dislikeById(id)
+            else repository.likeById(id)
         } catch (e: Exception) {
             _dataState.value = FeedModelState(error = true)
         }
     }
-
 
     fun removeById(id: Long) = viewModelScope.launch {
         try {
@@ -117,7 +98,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                     try {
                         _dataState.value = FeedModelState(loading = true)
                         repository.save(post.copy(content = text))
-                        loadPosts()
                         _dataState.value = FeedModelState()
                     } catch (e: Exception) {
                         _dataState.value = FeedModelState(error = true)
